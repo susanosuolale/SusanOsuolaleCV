@@ -1,0 +1,16 @@
+@model List<SusanOsuolaleCV.Models.WorkItem>
+@{
+    ViewData["Title"] = "Experience";
+}
+
+<h1 class="section-heading">Experience</h1>
+
+@foreach(var w in Model){
+    <div class="card card-feminine mb-3 p-3">
+        <h5>@w.Title</h5>
+        <h6 class="text-muted">@w.Company — @w.Period</h6>
+        <ul>
+            @foreach(var r in w.Responsibilities){<li>@r</li>}
+        </ul>
+    </div>
+}

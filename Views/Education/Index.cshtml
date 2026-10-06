@@ -1,0 +1,14 @@
+@model List<SusanOsuolaleCV.Models.EducationItem>
+@{
+    ViewData["Title"] = "Education";
+}
+
+<h1 class="section-heading">Education</h1>
+
+@foreach(var e in Model){
+    <div class="card card-feminine mb-3 p-3">
+        <h5>@e.Degree</h5>
+        <h6 class="text-muted">@e.Institution — @e.Years</h6>
+        <p>@e.Details</p>
+    </div>
+}

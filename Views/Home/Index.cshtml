@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="row align-items-center">
+    <div class="col-md-4 text-center mb-4">
+        <img src="~/images/avatar.jpeg" alt="Profile" class="profile-avatar" />
+    </div>
+    <div class="col-md-8">
+        <h1 class="display-5">OJONE SUSAN OSUOLALE</h1>
+        <p class="lead">Backend Software Engineer | ASP.NET Core | Cloud-Native APIs | AI Integration</p>
+
+        <p>Backend Software Engineer with experience designing secure, scalable RESTful APIs using C#, ASP.NET Core, EF Core, SQL Server, and PostgreSQL. I work with Clean Architecture, Redis, Docker, GitHub Actions, authentication, background processing, microservices, messaging, and AI-integrated APIs.</p>
+
+        <p>
+            <a class="btn-accent me-2" asp-controller="Projects" asp-action="Index">View My Work</a>
+            <a class="btn btn-outline-light" asp-controller="Contact" asp-action="Index">Contact Me</a>
+        </p>
+
+        <div class="mt-4">
+            <span class="tech-badge">C#</span>
+            <span class="tech-badge">ASP.NET Core</span>
+            <span class="tech-badge">EF Core</span>
+            <span class="tech-badge">PostgreSQL</span>
+            <span class="tech-badge">Redis</span>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <h2 class="section-heading">Selected Projects</h2>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card card-feminine p-3">
+                    <h5>SchoolMaster</h5>
+                    <p>Multi-tenant school management backend. C#, ASP.NET Core, Clean Architecture, EF Core.</p>
+                    <a class="btn btn-sm btn-accent" asp-controller="Projects" asp-action="Index">View Projects</a>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card card-feminine p-3">
+                    <h5>FreelanceFlow <small class="text-muted">(In Progress)</small></h5>
+                    <p>Invoice and payment microservice platform using CQRS and RabbitMQ.</p>
+                    <a class="btn btn-sm btn-accent" asp-controller="Projects" asp-action="Index">View Projects</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

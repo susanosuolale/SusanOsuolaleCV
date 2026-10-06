@@ -1,0 +1,20 @@
+@model List<SusanOsuolaleCV.Models.ProjectItem>
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<h1 class="section-heading">Projects</h1>
+
+<div class="row">
+    @foreach(var p in Model){
+        <div class="col-md-6 mb-3">
+            <div class="card card-feminine p-3">
+                <h5>@p.Title <small class="text-muted">@p.Status</small></h5>
+                <p>@p.Summary</p>
+                <div>
+                    @foreach(var t in p.Tags){ <span class="tech-badge">@t</span> }
+                </div>
+            </div>
+        </div>
+    }
+</div>

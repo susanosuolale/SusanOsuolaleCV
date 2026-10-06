@@ -1,0 +1,27 @@
+@model SusanOsuolaleCV.Models.TaxCalculationViewModel
+@{
+    ViewData["Title"] = "Tax Calculator";
+}
+
+<h1 class="section-heading">Tax Calculator</h1>
+
+<p>This page estimates Nigerian personal income tax.</p>
+
+<form asp-action="Calculate" method="post">
+    <div class="mb-3">
+        <label asp-for="AnnualIncome"></label>
+        <input asp-for="AnnualIncome" class="form-control" />
+        <span asp-validation-for="AnnualIncome" class="text-danger"></span>
+    </div>
+    <button class="btn-accent">Calculate</button>
+</form>
+
+@if(Model.EstimatedTax>0){
+    <div class="card card-feminine mt-3 p-3">
+        <h5>Estimate</h5>
+        <p><strong>Estimated tax:</strong> @Model.FormatNaira(Model.EstimatedTax) <br />
+        <strong>Net income:</strong> @Model.FormatNaira(Model.NetIncome)</p>
+    </div>
+}
+
+@section Scripts{<partial name="_ValidationScriptsPartial" />}
