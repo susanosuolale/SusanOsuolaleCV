@@ -1,0 +1,39 @@
+@model IEnumerable<SusanOsuolaleCV.Models.GalleryImage>
+
+@{
+    ViewData["Title"] = "Photo Gallery";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="section-heading">Photo Gallery</h2>
+        <p class="text-muted">A bright collection of moments — upload your images to display here.</p>
+    </div>
+    <div>
+        <a class="btn btn-accent" asp-controller="Gallery" asp-action="Upload">Upload New Image</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card card-feminine p-4 text-center">
+        <h4>No images yet</h4>
+        <p class="text-muted">Click upload to add your first image.</p>
+        <a class="btn btn-accent mt-2" asp-controller="Gallery" asp-action="Upload">Upload Image</a>
+    </div>
+}
+else
+{
+    <div class="gallery-grid mt-3">
+        @foreach (var img in Model)
+        {
+            <div class="gallery-card">
+                <img src="@img.FilePath" alt="@img.Title" />
+                <div class="meta">
+                    <div class="gallery-title">@img.Title</div>
+                    <a class="btn btn-sm btn-outline-primary" href="/Gallery/Details/@img.Id">View</a>
+                </div>
+            </div>
+        }
+    </div>
+}

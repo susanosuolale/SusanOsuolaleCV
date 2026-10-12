@@ -8,7 +8,7 @@ namespace SusanOsuolaleCV.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View(new ContactViewModel());
+            return View();
         }
 
  
