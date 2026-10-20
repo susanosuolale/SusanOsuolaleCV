@@ -13,6 +13,10 @@ namespace SusanOsuolaleCV.Models
         public decimal EstimatedTax { get; set; }
         public decimal NetIncome { get; set; }
 
+        // User-facing notice when income has no tax or other messages
+        public bool IsTaxable { get; set; }
+        public string Notice { get; set; } = string.Empty;
+
         // For 2026, the Nigeria Tax Act 2025 uses these progressive personal income-tax bands:
         public List<TaxBracket> Brackets { get; } = new List<TaxBracket>
         {
@@ -42,6 +46,25 @@ namespace SusanOsuolaleCV.Models
 
             EstimatedTax = tax;
             NetIncome = AnnualIncome - EstimatedTax;
+
+            // Provide a clear notice when no tax applies
+            if (EstimatedTax <= 0m)
+            {
+                IsTaxable = false;
+                if (AnnualIncome <= 0m)
+                {
+                    Notice = "Please enter an income amount to calculate tax.";
+                }
+                else
+                {
+                    Notice = "No tax is due for this income. You are below the taxable threshold.";
+                }
+            }
+            else
+            {
+                IsTaxable = true;
+                Notice = string.Empty;
+            }
         }
 
         public string FormatNaira(decimal amount)

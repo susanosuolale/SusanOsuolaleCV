@@ -12,8 +12,22 @@ namespace SusanOsuolaleCV
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Configure EF Core with SQL Server
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=(localdb)\\mssqllocaldb;Database=GalleryDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+            // Get connection string from configuration. In production (Azure) this must be provided by App Service settings.
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    // For local development only, fall back to LocalDB
+                    connectionString = "Server=(localdb)\\mssqllocaldb;Database=GalleryDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+                }
+                else
+                {
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured. In production, set the DefaultConnection in App Service connection strings.");
+                }
+            }
+
             builder.Services.AddDbContext<GalleryDbContext>(options =>
                 options.UseSqlServer(connectionString));
 

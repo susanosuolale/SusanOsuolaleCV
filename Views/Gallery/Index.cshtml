@@ -28,9 +28,12 @@ else
         @foreach (var img in Model)
         {
             <div class="gallery-card">
-                <img src="@img.FilePath" alt="@img.Title" />
+                <img src="/images/@img.FileName" alt="@img.Title" />
                 <div class="meta">
-                    <div class="gallery-title">@img.Title</div>
+                    <div>
+                        <div class="gallery-title">@img.Title</div>
+                        <div class="text-muted small">@img.Description</div>
+                    </div>
                     <a class="btn btn-sm btn-outline-primary" href="/Gallery/Details/@img.Id">View</a>
                 </div>
             </div>
