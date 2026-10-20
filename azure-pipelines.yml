@@ -32,3 +32,11 @@ steps:
     publishWebProjects: true
     arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
     zipAfterPublish: true
+
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure App Service'
+  inputs:
+    azureSubscription: 'SusanOsuolaleWebsiteConnection'
+    appType: 'webApp'
+    appName: 'SusanOsuolaleCV20261006155106'
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
