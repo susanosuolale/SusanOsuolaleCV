@@ -12,8 +12,8 @@ using SusanOsuolaleCV.Data;
 namespace SusanOsuolaleCV.Migrations
 {
     [DbContext(typeof(GalleryDbContext))]
-    [Migration("20261017171705_UpdateGalleryImageModel")]
-    partial class UpdateGalleryImageModel
+    [Migration("20261021143009_RecreateGalleryImageTable")]
+    partial class RecreateGalleryImageTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
