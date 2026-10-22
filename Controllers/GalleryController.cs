@@ -38,7 +38,7 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            var imagesFolder = Path.Combine(_env.ContentRootPath,"wwwroot","images");
+            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath,"gallery-images");
 
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);
