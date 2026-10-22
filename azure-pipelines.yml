@@ -31,14 +31,16 @@ steps:
     projects: '$(projectPath)'
     arguments: '--configuration $(buildConfiguration) --no-restore'
 
+
 - task: DotNetCoreCLI@2
   displayName: 'Publish SusanOsuolaleCV'
   inputs:
     command: 'publish'
     publishWebProjects: false
-    projects: '$(projectPath)'
-    arguments: '--configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/publish'
+    projects: 'SusanOsuolaleCV.csproj'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
     zipAfterPublish: true
+
 
 - task: AzureWebApp@1
   displayName: 'Deploy SusanOsuolaleCV to Azure App Service'
