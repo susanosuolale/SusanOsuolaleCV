@@ -38,13 +38,16 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            var imagesFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", "images");
+            var imagesFolder = Path.Combine(_env.ContentRootPath,"wwwroot","images");
 
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);
 
             var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
             var filePath = Path.Combine(imagesFolder, uniqueFileName);
+
+            Console.WriteLine($"Images folder: {imagesFolder}");
+            Console.WriteLine($"File path: {filePath}");
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
