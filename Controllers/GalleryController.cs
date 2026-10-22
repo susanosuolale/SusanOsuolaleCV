@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
@@ -28,6 +29,44 @@ namespace SusanOsuolaleCV.Controllers
             return View();
         }
 
+        public IActionResult GetImage(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName) ||
+                Path.GetFileName(fileName) != fileName)
+            {
+                return BadRequest();
+            }
+
+            var home = Environment.GetEnvironmentVariable("HOME");
+
+            var imagesFolders = new[]
+            {
+                Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
+                Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+            };
+
+            foreach (var imagesFolder in imagesFolders)
+            {
+                var filePath = Path.Combine(imagesFolder, fileName);
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    var contentType = Path.GetExtension(fileName).ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".webp" => "image/webp",
+                        _ => "application/octet-stream"
+                    };
+
+                    return PhysicalFile(filePath, contentType);
+                }
+            }
+
+            return NotFound();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
@@ -38,7 +77,7 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath,"gallery-images");
+            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath, "gallery-images");
 
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);

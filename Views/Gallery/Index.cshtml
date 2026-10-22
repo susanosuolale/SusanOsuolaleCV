@@ -28,7 +28,7 @@ else
         @foreach (var img in Model)
         {
             <div class="gallery-card">
-                <img src="/images/@img.FileName" alt="@img.Title" />
+                <img src="@Url.Action("GetImage", "Gallery", new { fileName = img.FileName })" alt="@img.Title" />
                 <div class="meta">
                     <div>
                         <div class="gallery-title">@img.Title</div>
