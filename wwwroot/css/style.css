@@ -15,11 +15,76 @@
 .navbar{ 
   background: linear-gradient(90deg, var(--primary-pink), var(--accent-pink));
   box-shadow: 0 6px 18px rgba(255,95,168,0.12);
+  padding: 0.8rem 0;
 }
 
 .navbar .navbar-brand, .nav-link {
   color: #fff !important;
   font-weight: 600;
+}
+
+.navbar-brand {
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.navbar .nav-link {
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.show {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.7);
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.3);
+}
+
+.navbar-toggler-icon {
+  filter: brightness(0) invert(1);
+}
+
+.navbar .dropdown-menu {
+  min-width: 13rem;
+  margin-top: 0.5rem;
+  border: 0;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  background: #fff7fb;
+  box-shadow: 0 14px 30px rgba(137, 45, 93, 0.18);
+}
+
+.navbar .dropdown-item {
+  border-radius: 0.65rem;
+  color: var(--muted-text);
+  padding: 0.6rem 0.75rem;
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  color: #fff;
+  background: var(--primary-pink);
+}
+
+.cv-download-link {
+  background: #fff;
+  color: var(--primary-pink) !important;
+  box-shadow: 0 6px 14px rgba(137, 45, 93, 0.16);
+  padding-inline: 1rem !important;
+}
+
+.cv-download-link:hover,
+.cv-download-link:focus {
+  background: #fff0f8 !important;
+  color: #d92e7d !important;
 }
 
 .card-feminine {
