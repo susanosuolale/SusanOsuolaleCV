@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
+using SusanOsuolaleCV.Hubs;
 
 namespace SusanOsuolaleCV
 {
@@ -11,6 +12,7 @@ namespace SusanOsuolaleCV
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSignalR();
 
             // Get connection string from configuration. In production (Azure) this must be provided by App Service settings.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -58,6 +60,7 @@ namespace SusanOsuolaleCV
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapHub<CvDownloadHub>("/hubs/cv-downloads");
 
             app.Run();
         }

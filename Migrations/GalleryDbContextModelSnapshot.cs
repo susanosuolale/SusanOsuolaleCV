@@ -22,6 +22,22 @@ namespace SusanOsuolaleCV.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SusanOsuolaleCV.Models.CvDownload", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DownloadedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CvDownloads");
+                });
+
             modelBuilder.Entity("SusanOsuolaleCV.Models.GalleryImage", b =>
                 {
                     b.Property<Guid>("Id")

@@ -10,5 +10,6 @@ namespace SusanOsuolaleCV.Data
         }
 
         public DbSet<GalleryImage> GalleryImages { get; set; }
+        public DbSet<CvDownload> CvDownloads { get; set; }
     }
 }
