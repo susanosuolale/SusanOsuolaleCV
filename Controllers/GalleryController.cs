@@ -1,5 +1,8 @@
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data.Common;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
 
@@ -17,9 +20,21 @@ namespace SusanOsuolaleCV.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var images = _context.GalleryImages.ToList();
+            IEnumerable<GalleryImage> images;
+
+            try
+            {
+                images = await _context.GalleryImages.AsNoTracking().ToListAsync();
+            }
+            catch (Exception ex) when (ex is DbException || ex is RetryLimitExceededException)
+            {
+                images = Array.Empty<GalleryImage>();
+                ViewBag.DatabaseMessage = "We couldn't load the photo album right now. Please try again in a moment!";
+                ViewBag.DatabaseError = ex.GetBaseException().Message;
+            }
+
             return View(images);
         }
 

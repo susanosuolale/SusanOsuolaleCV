@@ -14,6 +14,24 @@
     </div>
 </div>
 
+@if (ViewBag.DatabaseMessage is string databaseMessage)
+{
+    <div class="database-wakeup-message" role="status">
+        <span class="database-wakeup-icon" aria-hidden="true">?</span>
+        <div>
+            <strong>Oops, our photo album is feeling a little shy!</strong>
+            <p class="mb-0">@databaseMessage</p>
+            @if (ViewBag.DatabaseError is string databaseError)
+            {
+                <details class="database-error-details">
+                    <summary>Technical details</summary>
+                    <code>@databaseError</code>
+                </details>
+            }
+        </div>
+    </div>
+}
+
 @if (!Model.Any())
 {
     <div class="card card-feminine p-4 text-center">
