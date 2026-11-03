@@ -16,7 +16,15 @@
     <button class="btn-accent">Calculate</button>
 </form>
 
-@if(Model.EstimatedTax>0){
+@if (!string.IsNullOrEmpty(Model.Notice))
+{
+    <div class="card card-feminine mt-3 p-3" style="border-left:4px solid var(--accent-pink);">
+        <h5 class="mb-1">Note</h5>
+        <p class="mb-0">@Model.Notice</p>
+    </div>
+}
+
+@if(Model.IsTaxable){
     <div class="card card-feminine mt-3 p-3">
         <h5>Estimate</h5>
         <p><strong>Estimated tax:</strong> @Model.FormatNaira(Model.EstimatedTax) <br />
