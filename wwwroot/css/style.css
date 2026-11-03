@@ -87,6 +87,13 @@
   color: #d92e7d !important;
 }
 
+.cv-download-notification {
+  z-index: 1080;
+  max-width: min(24rem, calc(100vw - 2rem));
+  margin-bottom: 1rem !important;
+  box-shadow: 0 12px 28px rgba(137, 45, 93, 0.2);
+}
+
 .card-feminine {
   border-radius: 12px;
   background: linear-gradient(180deg, #ffffff, #fffafc);
