@@ -1,6 +1,5 @@
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
 
@@ -18,9 +17,9 @@ namespace SusanOsuolaleCV.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var images = await _context.GalleryImages.ToListAsync();
+            var images = _context.GalleryImages.ToList();
             return View(images);
         }
 

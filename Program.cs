@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Hubs;
+using System;
 
 namespace SusanOsuolaleCV
 {
@@ -31,7 +32,11 @@ namespace SusanOsuolaleCV
             }
 
             builder.Services.AddDbContext<GalleryDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                    sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null)));
 
             var app = builder.Build();
 
