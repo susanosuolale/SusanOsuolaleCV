@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
+using System;
 
 namespace SusanOsuolaleCV
 {
@@ -13,9 +15,29 @@ namespace SusanOsuolaleCV
             builder.Services.AddControllersWithViews();
 
             // Configure EF Core with SQL Server
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=(localdb)\\mssqllocaldb;Database=GalleryDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            var isLocalDbConnection = connectionString?.Contains("(localdb)", StringComparison.OrdinalIgnoreCase) == true;
+
+            if (string.IsNullOrWhiteSpace(connectionString) ||
+                (!builder.Environment.IsDevelopment() && isLocalDbConnection))
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    connectionString = "Server=(localdb)\\mssqllocaldb;Database=GalleryDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+                }
+                else
+                {
+                    throw new InvalidOperationException("A valid Azure SQL 'DefaultConnection' is not configured. In production, set DefaultConnection in the App Service connection strings or application settings; LocalDB is not available in Azure.");
+                }
+            }
+
             builder.Services.AddDbContext<GalleryDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                    sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null)));
 
             var app = builder.Build();
 

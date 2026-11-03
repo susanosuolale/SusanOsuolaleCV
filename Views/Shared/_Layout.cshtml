@@ -23,7 +23,7 @@
                         <li class="nav-item"><a class="nav-link" asp-controller="Experience" asp-action="Index">Experience</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Education" asp-action="Index">Education</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Projects" asp-action="Index">Projects</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Gallery" asp-action="Index">Gallery</a></li>
+                         <li class="nav-item"><a class="nav-link" data-gallery-link="true" asp-controller="Gallery" asp-action="Index">Gallery</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Gallery" asp-action="Upload">Upload Image</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Tax" asp-action="Index">Tax Calculator</a></li>
                         <li class="nav-item"><a class="nav-link" asp-controller="Contact" asp-action="Index">Contact</a></li>
@@ -32,6 +32,14 @@
             </div>
         </nav>
     </header>
+
+    <div id="gallery-loading-notification" class="gallery-loading-notification d-none" role="status" aria-live="polite">
+        <div class="gallery-loading-card">
+            <div class="gallery-loading-spinner" aria-hidden="true"></div>
+            <strong>Our photo album is waking up from a little Azure nap</strong>
+            <p class="mb-0">It may take a moment, but your memories are on their way!</p>
+        </div>
+    </div>
 
     <div class="container py-4">
         <main role="main" class="pb-3">
@@ -55,6 +63,19 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.querySelectorAll('[data-gallery-link="true"]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+                    document.getElementById('gallery-loading-notification').classList.remove('d-none');
+                }
+            });
+        });
+
+        window.addEventListener('pageshow', function () {
+            document.getElementById('gallery-loading-notification').classList.add('d-none');
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

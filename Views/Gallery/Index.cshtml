@@ -14,6 +14,24 @@
     </div>
 </div>
 
+@if (ViewBag.DatabaseMessage is string databaseMessage)
+{
+    <div class="database-wakeup-message" role="status">
+        <span class="database-wakeup-icon" aria-hidden="true">?</span>
+        <div>
+            <strong>Oops, our photo album is feeling a little shy!</strong>
+            <p class="mb-0">@databaseMessage</p>
+        @if (ViewBag.DatabaseError is string databaseError)
+        {
+                <details class="database-error-details">
+                    <summary>Technical details</summary>
+                    <code>@databaseError</code>
+                </details>
+        }
+        </div>
+    </div>
+}
+
 @if (!Model.Any())
 {
     <div class="card card-feminine p-4 text-center">
@@ -28,9 +46,12 @@ else
         @foreach (var img in Model)
         {
             <div class="gallery-card">
-                <img src="@img.FilePath" alt="@img.Title" />
+                <img src="@Url.Action("GetImage", "Gallery", new { fileName = img.FileName })" alt="@img.Title" />
                 <div class="meta">
-                    <div class="gallery-title">@img.Title</div>
+                    <div>
+                        <div class="gallery-title">@img.Title</div>
+                        <div class="text-muted small">@img.Description</div>
+                    </div>
                     <a class="btn btn-sm btn-outline-primary" href="/Gallery/Details/@img.Id">View</a>
                 </div>
             </div>

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
+using System.Data.Common;
 
 namespace SusanOsuolaleCV.Controllers
 {
@@ -19,7 +21,19 @@ namespace SusanOsuolaleCV.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var images = await _context.GalleryImages.ToListAsync();
+            IEnumerable<GalleryImage> images;
+
+            try
+            {
+                images = await _context.GalleryImages.AsNoTracking().ToListAsync();
+            }
+            catch (Exception ex) when (ex is DbException || ex is RetryLimitExceededException)
+            {
+                images = Array.Empty<GalleryImage>();
+                ViewBag.DatabaseMessage = "We couldn't load the photo album right now. Please try again in a moment!";
+                ViewBag.DatabaseError = ex.GetBaseException().Message;
+            }
+
             return View(images);
         }
 
@@ -29,9 +43,47 @@ namespace SusanOsuolaleCV.Controllers
             return View();
         }
 
+        public IActionResult GetImage(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName) ||
+                Path.GetFileName(fileName) != fileName)
+            {
+                return BadRequest();
+            }
+
+            var home = Environment.GetEnvironmentVariable("HOME");
+
+            var imagesFolders = new[]
+            {
+                Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
+                Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+            };
+
+            foreach (var imagesFolder in imagesFolders)
+            {
+                var filePath = Path.Combine(imagesFolder, fileName);
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    var contentType = Path.GetExtension(fileName).ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".webp" => "image/webp",
+                        _ => "application/octet-stream"
+                    };
+
+                    return PhysicalFile(filePath, contentType);
+                }
+            }
+
+            return NotFound();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upload(IFormFile imageFile, string title)
+        public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
         {
             if (imageFile == null || imageFile.Length == 0)
             {
@@ -39,10 +91,7 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            //creates the path to wwwroot/images where the images will be stored by taking
-            //the two pieces of text combining them with a slash in the middle
-            //_env.WebRootPath finds the path were the project is saved in the computer
-            var imagesFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", "images");
+            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath, "gallery-images");
 
             // ensure images folder exists
             if (!Directory.Exists(imagesFolder))
@@ -60,13 +109,11 @@ namespace SusanOsuolaleCV.Controllers
                 await imageFile.CopyToAsync(stream);
             }
 
-            // Save record to database
-            var relativePath = Path.Combine("/images", uniqueFileName).Replace("\\", "/");
-
             var galleryImage = new GalleryImage
             {
+                FileName = uniqueFileName,
                 Title = title ?? Path.GetFileNameWithoutExtension(imageFile.FileName),
-                FilePath = relativePath
+                Description = description ?? string.Empty
             };
 
             _context.GalleryImages.Add(galleryImage);
@@ -76,7 +123,7 @@ namespace SusanOsuolaleCV.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(Guid id)
         {
             var image = await _context.GalleryImages.FindAsync(id);
             if (image == null) return NotFound();
