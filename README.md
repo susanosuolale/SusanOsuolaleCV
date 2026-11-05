@@ -6,6 +6,5 @@ Features include:
 
 - Personal CV pages.
 - Nigerian tax calculator.
-- Contact Us page.
 - Image uploads and a gallery for viewing uploaded images.
 
