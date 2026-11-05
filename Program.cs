@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
 using System;
 
@@ -17,10 +16,7 @@ namespace SusanOsuolaleCV
             // Configure EF Core with SQL Server
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            var isLocalDbConnection = connectionString?.Contains("(localdb)", StringComparison.OrdinalIgnoreCase) == true;
-
-            if (string.IsNullOrWhiteSpace(connectionString) ||
-                (!builder.Environment.IsDevelopment() && isLocalDbConnection))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
                 if (builder.Environment.IsDevelopment())
                 {
@@ -28,7 +24,7 @@ namespace SusanOsuolaleCV
                 }
                 else
                 {
-                    throw new InvalidOperationException("A valid Azure SQL 'DefaultConnection' is not configured. In production, set DefaultConnection in the App Service connection strings or application settings; LocalDB is not available in Azure.");
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured. In production, set the DefaultConnection in App Service connection strings.");
                 }
             }
 
