@@ -1,0 +1,49 @@
+
+trigger:
+  branches:
+    include:
+      - assignment-1
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  projectPath: 'SusanOsuolaleCV.csproj'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install .NET 8 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore dependencies'
+  inputs:
+    command: 'restore'
+    projects: '$(projectPath)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build project'
+  inputs:
+    command: 'build'
+    projects: '$(projectPath)'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish project'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '$(projectPath)'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+    zipAfterPublish: true
+
+- task: AzureWebApp@1
+  displayName: 'Deploy Assignment 1'
+  inputs:
+    azureSubscription: 'SusanOsuolaleWebsiteConnection'
+    appType: 'webApp'
+    appName: 'second-contact-assignment-bincomdev'
+    package: '$(Build.ArtifactStagingDirectory)/publish/**/*.zip'
