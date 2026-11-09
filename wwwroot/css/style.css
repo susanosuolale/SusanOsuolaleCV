@@ -213,6 +213,33 @@
 
 .section-heading{ font-family: 'Georgia', serif; font-size:1.6rem; color:#35152d; margin-bottom:1rem; }
 
+.site-footer {
+  margin-top: 2rem;
+  padding: 1.5rem 0;
+  color: var(--muted-text);
+  background: rgba(255,255,255,0.68);
+  border-top: 1px solid rgba(90,42,67,0.12);
+}
+
+.site-footer a {
+  color: var(--muted-text);
+  text-decoration: none;
+}
+
+.site-footer a:hover,
+.site-footer a:focus {
+  color: var(--primary-pink);
+  text-decoration: underline;
+}
+
+@media (max-width:767px) {
+  .site-footer .container {
+    gap: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
 .tech-badge { display:inline-block; background:linear-gradient(90deg,#fff,#ffe0ee); padding:0.35rem 0.75rem; border-radius:999px; border:1px solid rgba(232,62,140,0.2); margin:0.2rem; }
 
   color: #403c43;
