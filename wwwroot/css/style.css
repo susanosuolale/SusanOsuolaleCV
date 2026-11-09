@@ -217,8 +217,9 @@
   margin-top: 2rem;
   padding: 1.5rem 0;
   color: var(--muted-text);
-  background: rgba(255,255,255,0.68);
-  border-top: 1px solid rgba(90,42,67,0.12);
+  background: linear-gradient(135deg, #fff1f7, #ffd1e7);
+  border-top: 1px solid rgba(232, 62, 140, 0.35);
+  box-shadow: 0 -8px 20px rgba(111, 28, 79, 0.08);
 }
 
 .site-footer a {
