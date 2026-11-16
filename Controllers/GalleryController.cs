@@ -84,6 +84,43 @@ namespace SusanOsuolaleCV.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var image = await _context.GalleryImages.FindAsync(id);
+            if (image == null)
+            {
+                return NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(image.FileName) &&
+                Path.GetFileName(image.FileName) == image.FileName)
+            {
+                var home = Environment.GetEnvironmentVariable("HOME");
+                var imagesFolders = new[]
+                {
+                    Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
+                    Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+                };
+
+                foreach (var imagesFolder in imagesFolders)
+                {
+                    var filePath = Path.Combine(imagesFolder, image.FileName);
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                        break;
+                    }
+                }
+            }
+
+            _context.GalleryImages.Remove(image);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
         {
             if (imageFile == null || imageFile.Length == 0)
