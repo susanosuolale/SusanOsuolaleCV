@@ -1,10 +1,11 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
-using System.Data.Common;
 using SusanOsuolaleCV.Services;
+using System.Data.Common;
 
 namespace SusanOsuolaleCV.Controllers
 {
@@ -14,7 +15,10 @@ namespace SusanOsuolaleCV.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IGalleryStorage _galleryStorage;
 
-        public GalleryController(GalleryDbContext context, IWebHostEnvironment env, IGalleryStorage galleryStorage)
+        public GalleryController(
+            GalleryDbContext context,
+            IWebHostEnvironment env,
+            IGalleryStorage galleryStorage)
         {
             _context = context;
             _env = env;
@@ -28,12 +32,18 @@ namespace SusanOsuolaleCV.Controllers
 
             try
             {
-                images = await _context.GalleryImages.AsNoTracking().ToListAsync();
+                images = await _context.GalleryImages
+                    .AsNoTracking()
+                    .ToListAsync();
             }
-            catch (Exception ex) when (ex is DbException || ex is RetryLimitExceededException)
+            catch (Exception ex) when (
+                ex is DbException || ex is RetryLimitExceededException)
             {
                 images = Array.Empty<GalleryImage>();
-                ViewBag.DatabaseMessage = "We couldn't load the photo album right now. Please try again in a moment!";
+
+                ViewBag.DatabaseMessage =
+                    "We couldn't load the photo album right now. Please try again in a moment!";
+
                 ViewBag.DatabaseError = ex.GetBaseException().Message;
             }
 
@@ -46,6 +56,66 @@ namespace SusanOsuolaleCV.Controllers
             return View();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upload(
+            IFormFile imageFile,
+            string title,
+            string description)
+        {
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                ModelState.AddModelError("", "Please select an image file.");
+                return View();
+            }
+
+            var uniqueFileName =
+                Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+            // Upload the image to shared Azure Blob Storage.
+            using (var stream = imageFile.OpenReadStream())
+            {
+                await _galleryStorage.UploadAsync(
+                    uniqueFileName,
+                    stream,
+                    imageFile.ContentType);
+            }
+
+            try
+            {
+                // Save the image information in the shared SQL database.
+                var galleryImage = new GalleryImage
+                {
+                    FileName = uniqueFileName,
+                    Title = string.IsNullOrWhiteSpace(title)
+                        ? Path.GetFileNameWithoutExtension(imageFile.FileName)
+                        : title,
+                    Description = description ?? string.Empty
+                };
+
+                _context.GalleryImages.Add(galleryImage);
+
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                // Remove the uploaded blob if saving its database record fails.
+                try
+                {
+                    await _galleryStorage.DeleteIfExistsAsync(uniqueFileName);
+                }
+                catch
+                {
+                    // Preserve the original database error.
+                }
+
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetImage(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName) ||
@@ -54,18 +124,23 @@ namespace SusanOsuolaleCV.Controllers
                 return BadRequest();
             }
 
+            // Check shared Blob Storage first.
             var blobStream = await _galleryStorage.OpenReadAsync(fileName);
-            if (blobStream is not null)
+
+            if (blobStream != null)
             {
                 return File(blobStream, GetContentType(fileName));
             }
 
+            // Fall back to older local images.
             var home = Environment.GetEnvironmentVariable("HOME");
 
             var imagesFolders = new[]
             {
                 Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
-                Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+                Path.Combine(
+                    _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"),
+                    "images")
             };
 
             foreach (var imagesFolder in imagesFolders)
@@ -95,7 +170,9 @@ namespace SusanOsuolaleCV.Controllers
             if (!string.IsNullOrWhiteSpace(image.FileName) &&
                 Path.GetFileName(image.FileName) == image.FileName)
             {
-                var deletedFromBlob = await _galleryStorage.DeleteIfExistsAsync(image.FileName);
+                var deletedFromBlob =
+                    await _galleryStorage.DeleteIfExistsAsync(image.FileName);
+
                 if (!deletedFromBlob)
                 {
                     DeleteLegacyFile(image.FileName);
@@ -103,44 +180,7 @@ namespace SusanOsuolaleCV.Controllers
             }
 
             _context.GalleryImages.Remove(image);
-            await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
-        {
-            if (imageFile == null || imageFile.Length == 0)
-            {
-                ModelState.AddModelError("", "Please select an image file.");
-                return View();
-            }
-
-            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            var existsInBlob = await _galleryStorage.OpenReadAsync(uniqueFileName) != null;
-
-            if (existsInBlob)
-            {
-                ModelState.AddModelError("", "This image has already been uploaded.");
-                return View();
-            }
-
-            using (var stream = imageFile.OpenReadStream())
-            {
-                await _galleryStorage.UploadAsync(
-                    uniqueFileName,
-                    stream,
-                    imageFile.ContentType);
-            }
-
-            var galleryImage = new GalleryImage
-            {
-                FileName = uniqueFileName,
-                Title = title ?? Path.GetFileNameWithoutExtension(imageFile.FileName),
-                Description = description ?? string.Empty
-            };
-
-            _context.GalleryImages.Add(galleryImage);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -149,15 +189,19 @@ namespace SusanOsuolaleCV.Controllers
         private void DeleteLegacyFile(string fileName)
         {
             var home = Environment.GetEnvironmentVariable("HOME");
+
             var imagesFolders = new[]
             {
                 Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
-                Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+                Path.Combine(
+                    _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"),
+                    "images")
             };
 
             foreach (var imagesFolder in imagesFolders)
             {
                 var filePath = Path.Combine(imagesFolder, fileName);
+
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
@@ -180,7 +224,12 @@ namespace SusanOsuolaleCV.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             var image = await _context.GalleryImages.FindAsync(id);
-            if (image == null) return NotFound();
+
+            if (image == null)
+            {
+                return NotFound();
+            }
+
             return View(image);
         }
     }
