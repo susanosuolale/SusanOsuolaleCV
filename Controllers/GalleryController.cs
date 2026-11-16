@@ -108,8 +108,6 @@ namespace SusanOsuolaleCV.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
         {
             if (imageFile == null || imageFile.Length == 0)
@@ -118,22 +116,21 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath, "gallery-images");
-
-            // ensure images folder exists
-            if (!Directory.Exists(imagesFolder))
-                Directory.CreateDirectory(imagesFolder);
-
-            //creates a random string of letters and gets the file extensiion like .jpg, joins them together to
-            //to give the file a unique name
             var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            var filePath = Path.Combine(imagesFolder, uniqueFileName);
+            var existsInBlob = await _galleryStorage.OpenReadAsync(uniqueFileName) != null;
 
-            // creates stream that works with files and connects it to the file path
-            //then the file is copied into the stream which writes the bytes into the file path
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (existsInBlob)
             {
-                await imageFile.CopyToAsync(stream);
+                ModelState.AddModelError("", "This image has already been uploaded.");
+                return View();
+            }
+
+            using (var stream = imageFile.OpenReadStream())
+            {
+                await _galleryStorage.UploadAsync(
+                    uniqueFileName,
+                    stream,
+                    imageFile.ContentType);
             }
 
             var galleryImage = new GalleryImage
@@ -146,7 +143,7 @@ namespace SusanOsuolaleCV.Controllers
             _context.GalleryImages.Add(galleryImage);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         private void DeleteLegacyFile(string fileName)
