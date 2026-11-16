@@ -52,7 +52,13 @@ else
                         <div class="gallery-title">@img.Title</div>
                         <div class="text-muted small">@img.Description</div>
                     </div>
-                    <a class="btn btn-sm btn-outline-primary" href="/Gallery/Details/@img.Id">View</a>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-outline-primary" href="/Gallery/Details/@img.Id">View</a>
+                        <form asp-controller="Gallery" asp-action="Delete" asp-route-id="@img.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         }
