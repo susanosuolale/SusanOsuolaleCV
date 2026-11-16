@@ -108,6 +108,7 @@ namespace SusanOsuolaleCV.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(IFormFile imageFile, string title, string description)
@@ -118,20 +119,14 @@ namespace SusanOsuolaleCV.Controllers
                 return View();
             }
 
-            var imagesFolder = Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? _env.ContentRootPath, "gallery-images");
-
-            if (!Directory.Exists(imagesFolder))
-                Directory.CreateDirectory(imagesFolder);
-
             var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            var filePath = Path.Combine(imagesFolder, uniqueFileName);
 
-            Console.WriteLine($"Images folder: {imagesFolder}");
-            Console.WriteLine($"File path: {filePath}");
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = imageFile.OpenReadStream())
             {
-                await imageFile.CopyToAsync(stream);
+                await _galleryStorage.UploadAsync(
+                    uniqueFileName,
+                    stream,
+                    imageFile.ContentType);
             }
 
             var galleryImage = new GalleryImage
@@ -144,8 +139,9 @@ namespace SusanOsuolaleCV.Controllers
             _context.GalleryImages.Add(galleryImage);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
+
 
         private void DeleteLegacyFile(string fileName)
         {
