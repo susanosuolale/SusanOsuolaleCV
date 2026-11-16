@@ -89,7 +89,7 @@ namespace SusanOsuolaleCV.Controllers
             var image = await _context.GalleryImages.FindAsync(id);
             if (image == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Index));
             }
 
             if (!string.IsNullOrWhiteSpace(image.FileName) &&
