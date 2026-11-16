@@ -7,7 +7,9 @@
         <h3 class="section-heading">Upload an Image</h3>
         <p class="text-muted">Choose an image and give it a short title.</p>
 
-        <form asp-action="Upload" asp-controller="Gallery" method="post" enctype="multipart/form-data">
+        <form id="gallery-upload-form" asp-action="Upload" asp-controller="Gallery" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="uploadRequestKey" value="@ViewBag.UploadRequestKey" />
             <div class="mb-3">
                 <label for="title" class="form-label">Title</label>
                 <input type="text" class="form-control form-control-lg" id="title" name="title" placeholder="A short descriptive title" />
@@ -21,9 +23,13 @@
                 <input type="file" class="form-file-input form-control" id="imageFile" name="imageFile" accept="image/*" />
             </div>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-accent">Upload</button>
+                <button id="gallery-upload-button" type="submit" class="btn btn-accent">
+                    <span id="gallery-upload-spinner" class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                    <span id="gallery-upload-button-text">Upload</span>
+                </button>
                 <a class="btn btn-outline-secondary" href="/Gallery">Back to Gallery</a>
             </div>
+            <div id="gallery-upload-status" class="upload-status d-none" role="status" aria-live="polite"></div>
         </form>
 
         @if (!ViewData.ModelState.IsValid)
@@ -37,3 +43,69 @@
         }
     </div>
 </div>
+
+<script>
+    (() => {
+        const form = document.getElementById('gallery-upload-form');
+        const button = document.getElementById('gallery-upload-button');
+        const spinner = document.getElementById('gallery-upload-spinner');
+        const buttonText = document.getElementById('gallery-upload-button-text');
+        const status = document.getElementById('gallery-upload-status');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (form.dataset.submitting === 'true') return;
+
+            form.dataset.submitting = 'true';
+            button.disabled = true;
+            spinner.classList.remove('d-none');
+            buttonText.textContent = 'Uploading...';
+            status.className = 'upload-status upload-status-info';
+            status.textContent = 'Uploading your image. Please wait...';
+
+            const request = new XMLHttpRequest();
+            request.open('POST', form.action);
+            request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            request.upload.addEventListener('progress', (progressEvent) => {
+                if (progressEvent.lengthComputable) {
+                    const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    status.textContent = `Uploading your image. ${percentage}% sent...`;
+                }
+            });
+
+            request.upload.addEventListener('load', () => {
+                status.textContent = 'Your image has been received. Saving it to the gallery...';
+            });
+
+            request.addEventListener('load', () => {
+                let result = null;
+                try { result = JSON.parse(request.responseText); } catch { }
+
+                if (request.status >= 200 && request.status < 300 && result?.success) {
+                    status.className = 'upload-status upload-status-success';
+                    status.textContent = 'Your image has been saved to the gallery!';
+                    window.setTimeout(() => window.location.href = '/Gallery', 900);
+                    return;
+                }
+
+                showUploadError(result?.message || 'We could not upload your image. Please try again.');
+            });
+
+            request.addEventListener('error', () => {
+                showUploadError('The upload connection was interrupted. Please try again.');
+            });
+
+            request.send(new FormData(form));
+        });
+
+        function showUploadError(message) {
+            form.dataset.submitting = 'false';
+            button.disabled = false;
+            spinner.classList.add('d-none');
+            buttonText.textContent = 'Upload';
+            status.className = 'upload-status upload-status-error';
+            status.textContent = message;
+        }
+    })();
+</script>
