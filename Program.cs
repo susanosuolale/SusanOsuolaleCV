@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Hubs;
+using SusanOsuolaleCV.Services;
 using System;
 
 namespace SusanOsuolaleCV
@@ -14,6 +15,7 @@ namespace SusanOsuolaleCV
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IGalleryStorage, AzureBlobGalleryStorage>();
 
             // Get connection string from configuration. In production (Azure) this must be provided by App Service settings.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

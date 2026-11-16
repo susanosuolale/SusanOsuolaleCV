@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System.Data.Common;
 using SusanOsuolaleCV.Data;
 using SusanOsuolaleCV.Models;
+using SusanOsuolaleCV.Services;
 
 namespace SusanOsuolaleCV.Controllers
 {
@@ -12,11 +13,13 @@ namespace SusanOsuolaleCV.Controllers
     {
         private readonly GalleryDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IGalleryStorage _galleryStorage;
 
-        public GalleryController(GalleryDbContext context, IWebHostEnvironment env)
+        public GalleryController(GalleryDbContext context, IWebHostEnvironment env, IGalleryStorage galleryStorage)
         {
             _context = context;
             _env = env;
+            _galleryStorage = galleryStorage;
         }
 
         [HttpGet]
@@ -44,12 +47,18 @@ namespace SusanOsuolaleCV.Controllers
             return View();
         }
 
-        public IActionResult GetImage(string fileName)
+        public async Task<IActionResult> GetImage(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName) ||
                 Path.GetFileName(fileName) != fileName)
             {
                 return BadRequest();
+            }
+
+            var blobStream = await _galleryStorage.OpenReadAsync(fileName);
+            if (blobStream is not null)
+            {
+                return File(blobStream, GetContentType(fileName));
             }
 
             var home = Environment.GetEnvironmentVariable("HOME");
@@ -66,16 +75,7 @@ namespace SusanOsuolaleCV.Controllers
 
                 if (System.IO.File.Exists(filePath))
                 {
-                    var contentType = Path.GetExtension(fileName).ToLowerInvariant() switch
-                    {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
-                        ".webp" => "image/webp",
-                        _ => "application/octet-stream"
-                    };
-
-                    return PhysicalFile(filePath, contentType);
+                    return PhysicalFile(filePath, GetContentType(fileName));
                 }
             }
 
@@ -95,21 +95,10 @@ namespace SusanOsuolaleCV.Controllers
             if (!string.IsNullOrWhiteSpace(image.FileName) &&
                 Path.GetFileName(image.FileName) == image.FileName)
             {
-                var home = Environment.GetEnvironmentVariable("HOME");
-                var imagesFolders = new[]
+                var deletedFromBlob = await _galleryStorage.DeleteIfExistsAsync(image.FileName);
+                if (!deletedFromBlob)
                 {
-                    Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
-                    Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
-                };
-
-                foreach (var imagesFolder in imagesFolders)
-                {
-                    var filePath = Path.Combine(imagesFolder, image.FileName);
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                        break;
-                    }
+                    DeleteLegacyFile(image.FileName);
                 }
             }
 
@@ -157,6 +146,36 @@ namespace SusanOsuolaleCV.Controllers
 
             return RedirectToAction("Index");
         }
+
+        private void DeleteLegacyFile(string fileName)
+        {
+            var home = Environment.GetEnvironmentVariable("HOME");
+            var imagesFolders = new[]
+            {
+                Path.Combine(home ?? _env.ContentRootPath, "gallery-images"),
+                Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "images")
+            };
+
+            foreach (var imagesFolder in imagesFolders)
+            {
+                var filePath = Path.Combine(imagesFolder, fileName);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                    break;
+                }
+            }
+        }
+
+        private static string GetContentType(string fileName) =>
+            Path.GetExtension(fileName).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
 
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
