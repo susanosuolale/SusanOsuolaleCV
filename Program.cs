@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SusanOsuolaleCV.Data;
+using SusanOsuolaleCV.Services;
 using System;
 
 namespace SusanOsuolaleCV
@@ -12,6 +13,7 @@ namespace SusanOsuolaleCV
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSingleton<IGalleryStorage, AzureBlobGalleryStorage>();
 
             // Configure EF Core with SQL Server
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
